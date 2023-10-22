@@ -1,0 +1,64 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem            1.0
+
+PortGroup             github 1.0
+
+name                  lltag
+version               0.14.6
+revision              1
+
+categories            audio perl
+
+# FIXME: check validity of this
+license               GPL-2
+
+platforms             darwin
+maintainers           @thaewrapt
+
+description           Automatic command-line mp3/ogg/flac file tagger and renamer written in Perl
+
+long_description      A tool to tag and rename mp3/ogg/flac music files automagically. It uses mp3info, vorbiscomment and metaflac to do so.
+
+homepage              http://bgoglin.free.fr/lltag/
+
+github.setup          bgoglin ${name} ${name}-${version}
+github.tarball_from   archive
+
+checksums             rmd160  d0a7718e8929c970033a8c1703bdd8ab7cc66482 \
+                      sha256  e24c88866d89f90c11bcf89d9d1b4e8af78f486f1f7454a28210b10b8af17252 \
+                      size    57162
+
+depends_lib-append    bin:perl:perl5
+
+variant mp3 description {Enable support for MP3 files} {
+    depends_lib-append    port:mp3info \
+                          port:p5-mp3-tag
+}
+
+variant ogg description {Enable support for OGG Vorbis files} {
+    depends_lib-append    port:vorbis-tools
+}
+
+variant flac description {Enable support for FLAC files} {
+    depends_lib-append    port:flac
+}
+
+variant readline description {History and better terminal support for REPL mode} {
+    depends_lib-append    port:p5-term-readline-gnu
+}
+
+default_variants      +mp3 +ogg +flac +readline
+
+use_configure         no
+
+build.target
+build.args            PREFIX=${prefix} SYSCONFDIR=${prefix}/etc MANDIR=${prefix}/share/man PERL_INSTALLDIRS=vendor DOCDIR=${prefix}/share/doc/${name}
+
+destroot.target       install install-man install-doc
+destroot.args         PREFIX=${prefix} SYSCONFDIR=${prefix}/etc MANDIR=${prefix}/share/man PERL_INSTALLDIRS=vendor DOCDIR=${prefix}/share/doc/${name}
+
+post-build {
+    reinplace "s|^#!/usr/bin/perl|#!${prefix}/bin/perl|" ${worksrcpath}/lltag
+}
+
